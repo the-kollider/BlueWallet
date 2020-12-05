@@ -364,14 +364,20 @@ LNDViewInvoice.navigationOptions = navigationStyle(
     closeButtonFunc: ({ navigation }) => navigation.dangerouslyGetParent().pop(),
   },
   (options, { theme, navigation, route }) => {
-    return route.params.isModal === true
-      ? {
-          headerLeft: null,
-          gestureEnabled: false,
-        }
-      : {
-          headerRight: null,
-        };
+    const additionalOptions =
+      route.params.isModal === true
+        ? {
+            headerLeft: null,
+            gestureEnabled: false,
+          }
+        : {
+            headerRight: null,
+          };
+
+    return {
+      ...options,
+      ...additionalOptions,
+    };
   },
 );
 
