@@ -108,7 +108,7 @@ const TransactionsDetails = () => {
     setTo(to);
     setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hash]);
+  }, [hash, wallets]);
 
   useEffect(() => {
     HandoffSettings.isHandoffUseEnabled().then(setIsHandOffUseEnabled);

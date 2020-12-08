@@ -19,6 +19,7 @@ import { useFocusEffect, useNavigation, useRoute, useTheme } from '@react-naviga
 
 import { BlueAlertWalletExportReminder, BlueBitcoinAmount, BlueButton, BlueDismissKeyboardInputAccessory } from '../../BlueComponents';
 import navigationStyle from '../../components/navigationStyle';
+
 import * as NavigationService from '../../NavigationService';
 import { LightningCustodianWallet } from '../../class/wallets/lightning-custodian-wallet';
 import { BitcoinUnit, Chain } from '../../models/bitcoinUnits';
@@ -228,7 +229,7 @@ const LNDCreateInvoice = () => {
           screen: 'LnurlPay',
           params: {
             lnurl: data,
-            fromWalletID: walletID,
+            fromWalletID: walletID || wallet.current.getID(),
           },
         });
         return;
@@ -339,8 +340,9 @@ const LNDCreateInvoice = () => {
 
   if (wallet.current === undefined || !walletID) {
     return (
-      <View style={styles.error}>
-        <Text>System error: Source wallet not found (this should never happen)</Text>
+      <View style={[styles.root, styleHooks.root]}>
+        <StatusBar barStyle="light-content" />
+        <BlueLoading />
       </View>
     );
   }

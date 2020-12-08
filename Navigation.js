@@ -61,6 +61,7 @@ import PsbtWithHardwareWallet from './screen/send/psbtWithHardwareWallet';
 import PsbtMultisig from './screen/send/psbtMultisig';
 import Success from './screen/send/success';
 import Broadcast from './screen/send/broadcast';
+import IsItMyAddress from './screen/send/isItMyAddress';
 import CoinControl from './screen/send/coinControl';
 
 import ScanLndInvoice from './screen/lnd/scanLndInvoice';
@@ -161,6 +162,7 @@ const WalletsRoot = () => {
         options={LNDViewAdditionalInvoicePreImage.navigationOptions(theme)}
       />
       <WalletsStack.Screen name="Broadcast" component={Broadcast} options={Broadcast.navigationOptions(theme)} />
+      <WalletsStack.Screen name="IsItMyAddress" component={IsItMyAddress} options={IsItMyAddress.navigationOptions(theme)} />
       <WalletsStack.Screen name="LnurlPay" component={LnurlPay} options={LnurlPay.navigationOptions(theme)} />
       <WalletsStack.Screen name="LnurlPaySuccess" component={LnurlPaySuccess} options={LnurlPaySuccess.navigationOptions(theme)} />
       <WalletsStack.Screen
