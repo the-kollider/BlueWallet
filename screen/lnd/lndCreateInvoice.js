@@ -17,9 +17,14 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { Icon } from 'react-native-elements';
 import { useFocusEffect, useNavigation, useRoute, useTheme } from '@react-navigation/native';
 
-import { BlueAlertWalletExportReminder, BlueBitcoinAmount, BlueButton, BlueDismissKeyboardInputAccessory } from '../../BlueComponents';
+import {
+  BlueAlertWalletExportReminder,
+  BlueBitcoinAmount,
+  BlueButton,
+  BlueDismissKeyboardInputAccessory,
+  BlueLoading,
+} from '../../BlueComponents';
 import navigationStyle from '../../components/navigationStyle';
-
 import * as NavigationService from '../../NavigationService';
 import { LightningCustodianWallet } from '../../class/wallets/lightning-custodian-wallet';
 import { BitcoinUnit, Chain } from '../../models/bitcoinUnits';
