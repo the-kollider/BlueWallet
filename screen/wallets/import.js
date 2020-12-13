@@ -4,10 +4,10 @@ import { Platform, View, Keyboard, StatusBar, StyleSheet } from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { useNavigation, useRoute, useTheme } from '@react-navigation/native';
 import Clipboard from '@react-native-community/clipboard';
-import ImagePicker from 'react-native-image-picker';
 import { getSystemName } from 'react-native-device-info';
 import RNFS from 'react-native-fs';
 import DocumentPicker from 'react-native-document-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 
 import {
   BlueFormMultiInput,
@@ -116,7 +116,7 @@ const WalletsImport = () => {
   };
 
   const choosePhoto = () => {
-    ImagePicker.launchImageLibrary(
+    launchImageLibrary(
       {
         title: null,
         mediaType: 'photo',
@@ -124,7 +124,7 @@ const WalletsImport = () => {
       },
       response => {
         if (response.uri) {
-          const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.path.toString();
+          const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.uri;
           LocalQRCode.decode(uri, (error, result) => {
             if (!error) {
               onBarScanned(result);
@@ -138,7 +138,7 @@ const WalletsImport = () => {
   };
 
   const takePhoto = () => {
-    ImagePicker.launchCamera(
+    launchCamera(
       {
         title: null,
         mediaType: 'photo',
@@ -146,7 +146,7 @@ const WalletsImport = () => {
       },
       response => {
         if (response.uri) {
-          const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.path.toString();
+          const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.uri;
           LocalQRCode.decode(uri, (error, result) => {
             if (!error) {
               onBarScanned(result);

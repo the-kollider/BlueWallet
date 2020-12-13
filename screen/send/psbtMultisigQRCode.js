@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { getSystemName } from 'react-native-device-info';
-import ImagePicker from 'react-native-image-picker';
 import { useNavigation, useRoute, useTheme } from '@react-navigation/native';
+import { launchCamera } from 'react-native-image-picker';
 
 import { BlueSpacing20, SafeBlueArea } from '../../BlueComponents';
 import navigationStyle from '../../components/navigationStyle';
@@ -51,7 +51,7 @@ const PsbtMultisigQRCode = () => {
 
   const openScanner = () => {
     if (isDesktop) {
-      ImagePicker.launchCamera(
+      launchCamera(
         {
           title: null,
           mediaType: 'photo',
@@ -59,7 +59,7 @@ const PsbtMultisigQRCode = () => {
         },
         response => {
           if (response.uri) {
-            const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.path.toString();
+            const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.uri;
             LocalQRCode.decode(uri, (error, result) => {
               if (!error) {
                 onBarScanned(result);

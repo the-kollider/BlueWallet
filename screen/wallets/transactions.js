@@ -18,7 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import ImagePicker from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import Clipboard from '@react-native-community/clipboard';
 import { Icon } from 'react-native-elements';
 import Handoff from 'react-native-handoff';
@@ -29,7 +29,7 @@ import { Chain } from '../../models/bitcoinUnits';
 import { BlueTransactionListItem, BlueWalletNavigationHeader, BlueAlertWalletExportReminder, BlueListItem } from '../../BlueComponents';
 import WalletGradient from '../../class/wallet-gradient';
 import navigationStyle from '../../components/navigationStyle';
-import { LightningCustodianWallet, WatchOnlyWallet } from '../../class';
+import { LightningCustodianWallet, MultisigHDWallet, WatchOnlyWallet } from '../../class';
 import HandoffSettings from '../../class/handoff';
 import ActionSheet from '../ActionSheet';
 import loc from '../../loc';
@@ -438,8 +438,7 @@ const WalletTransactions = () => {
     if (!isLoading) {
       setIsLoading(true);
       const params = {
-        fromSecret: wallet.current.getSecret(),
-        // ScanLndInvoice actrually uses `fromSecret` so keeping it for now
+        walletID: wallet.current.getID(),
         uri: ret.data ? ret.data : ret,
         fromWallet: wallet.current,
       };
@@ -453,7 +452,7 @@ const WalletTransactions = () => {
   };
 
   const choosePhoto = () => {
-    ImagePicker.launchImageLibrary(
+    launchImageLibrary(
       {
         title: null,
         mediaType: 'photo',
@@ -461,7 +460,7 @@ const WalletTransactions = () => {
       },
       response => {
         if (response.uri) {
-          const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.path.toString();
+          const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.uri;
           LocalQRCode.decode(uri, (error, result) => {
             if (!error) {
               onBarCodeRead({ data: result });
@@ -480,7 +479,7 @@ const WalletTransactions = () => {
 
   const sendButtonPress = () => {
     if (wallet.current.chain === Chain.OFFCHAIN) {
-      navigate('ScanLndInvoiceRoot', { screen: 'ScanLndInvoice', params: { fromSecret: wallet.current.getSecret() } });
+      navigate('ScanLndInvoiceRoot', { screen: 'ScanLndInvoice', params: { walletID: wallet.current.getID() } });
     } else {
       if (wallet.current.type === WatchOnlyWallet.type && wallet.current.isHd() && wallet.current.getSecret().startsWith('zpub')) {
         if (wallet.current.useWithHardwareWalletEnabled()) {
@@ -572,6 +571,15 @@ const WalletTransactions = () => {
     }
   };
 
+  const navigateToViewEditCosigners = () => {
+    navigate('ViewEditMultisigCosignersRoot', {
+      screen: 'ViewEditMultisigCosigners',
+      params: {
+        walletId: wallet.current.getID(),
+      },
+    });
+  };
+
   return (
     <View style={styles.flex}>
       <StatusBar barStyle="light-content" backgroundColor={WalletGradient.headerColorFor(wallet.current.type)} />
@@ -591,23 +599,27 @@ const WalletTransactions = () => {
           })
         }
         onManageFundsPressed={() => {
-          if (wallet.current.getUserHasSavedExport()) {
-            setIsManageFundsModalVisible(true);
-          } else {
-            BlueAlertWalletExportReminder({
-              onSuccess: async () => {
-                wallet.current.setUserHasSavedExport(true);
-                await saveToDisk();
-                setIsManageFundsModalVisible(true);
-              },
-              onFailure: () =>
-                navigate('WalletExportRoot', {
-                  screen: 'WalletExport',
-                  params: {
-                    walletID: wallet.current.getID(),
-                  },
-                }),
-            });
+          if (wallet.current.type === MultisigHDWallet.type) {
+            navigateToViewEditCosigners();
+          } else if (wallet.current.type === LightningCustodianWallet.type) {
+            if (wallet.current.getUserHasSavedExport()) {
+              setIsManageFundsModalVisible(true);
+            } else {
+              BlueAlertWalletExportReminder({
+                onSuccess: async () => {
+                  wallet.current.setUserHasSavedExport(true);
+                  await saveToDisk();
+                  setIsManageFundsModalVisible(true);
+                },
+                onFailure: () =>
+                  navigate('WalletExportRoot', {
+                    screen: 'WalletExport',
+                    params: {
+                      walletID: wallet.current.getID(),
+                    },
+                  }),
+              });
+            }
           }
         }}
       />

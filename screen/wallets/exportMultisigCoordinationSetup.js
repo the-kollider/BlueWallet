@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useRef, useState } from 'react';
 import { ActivityIndicator, InteractionManager, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute, useTheme } from '@react-navigation/native';
 
@@ -16,29 +16,32 @@ const ExportMultisigCoordinationSetup = () => {
   const walletId = useRoute().params.walletId;
   const { wallets } = useContext(BlueStorageContext);
   const wallet = wallets.find(w => w.getID() === walletId);
-  const qrCodeContents = Buffer.from(wallet.getXpub(), 'ascii').toString('hex');
+  const qrCodeContents = useRef();
   const [isLoading, setIsLoading] = useState(true);
+  const [isShareButtonTapped, setIsShareButtonTapped] = useState(false);
   const { goBack } = useNavigation();
   const { colors } = useTheme();
-  const stylesHook = {
-    ...styles,
+  const stylesHook = StyleSheet.create({
     loading: {
-      ...styles.loading,
       backgroundColor: colors.elevated,
     },
     root: {
-      ...styles.root,
       backgroundColor: colors.elevated,
     },
-    type: { ...styles.type, color: colors.foregroundColor },
-    secret: { ...styles.secret, color: colors.foregroundColor },
+    type: { color: colors.foregroundColor },
+    secret: { color: colors.foregroundColor },
     exportButton: {
       backgroundColor: colors.buttonDisabledBackgroundColor,
     },
-  };
+  });
 
   const exportTxtFile = async () => {
-    await fs.writeFileAndExport(wallet.getLabel() + '.txt', wallet.getXpub());
+    setIsShareButtonTapped(true);
+    setTimeout(() => {
+      fs.writeFileAndExport(wallet.getLabel() + '.txt', wallet.getXpub()).finally(() => {
+        setIsShareButtonTapped(false);
+      });
+    }, 10);
   };
 
   useFocusEffect(
@@ -53,7 +56,7 @@ const ExportMultisigCoordinationSetup = () => {
               return goBack();
             }
           }
-
+          qrCodeContents.current = Buffer.from(wallet.getXpub(), 'ascii').toString('hex');
           setIsLoading(false);
         }
       });
@@ -65,22 +68,26 @@ const ExportMultisigCoordinationSetup = () => {
   );
 
   return isLoading ? (
-    <View style={stylesHook.loading}>
+    <View style={[styles.loading, stylesHook.loading]}>
       <ActivityIndicator />
     </View>
   ) : (
-    <SafeBlueArea style={stylesHook.root}>
+    <SafeBlueArea style={[styles.root, stylesHook.root]}>
       <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View>
-          <BlueText style={stylesHook.type}>{wallet.getLabel()}</BlueText>
+          <BlueText style={[styles.type, stylesHook.type]}>{wallet.getLabel()}</BlueText>
         </View>
         <BlueSpacing20 />
-        <DynamicQRCode value={qrCodeContents} capacity={400} />
+        <DynamicQRCode value={qrCodeContents.current} capacity={400} />
         <BlueSpacing20 />
-        <SquareButton style={[styles.exportButton, stylesHook.exportButton]} onPress={exportTxtFile} title={loc.multisig.share} />
+        {isShareButtonTapped ? (
+          <ActivityIndicator />
+        ) : (
+          <SquareButton style={[styles.exportButton, stylesHook.exportButton]} onPress={exportTxtFile} title={loc.multisig.share} />
+        )}
         <BlueSpacing20 />
-        <BlueText style={stylesHook.secret}>{wallet.getXpub()}</BlueText>
+        <BlueText style={[styles.secret, stylesHook.secret]}>{wallet.getXpub()}</BlueText>
       </ScrollView>
     </SafeBlueArea>
   );
@@ -89,7 +96,7 @@ const ExportMultisigCoordinationSetup = () => {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    paddingTop: 20,
+    justifyContent: 'center',
   },
   root: {
     flex: 1,

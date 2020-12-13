@@ -16,12 +16,12 @@ import {
 import { Icon } from 'react-native-elements';
 import { useNavigation, useRoute, useTheme } from '@react-navigation/native';
 import { getSystemName } from 'react-native-device-info';
-import ImagePicker from 'react-native-image-picker';
 import QRCode from 'react-native-qrcode-svg';
 import Clipboard from '@react-native-community/clipboard';
 import showPopupMenu from 'react-native-popup-menu-android';
 import ToolTip from 'react-native-tooltip';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { launchCamera } from 'react-native-image-picker';
 
 import {
   BlueButton,
@@ -60,7 +60,6 @@ const WalletsAddMultisigStep2 = () => {
   const { m, n, format } = useRoute().params;
 
   const [cosigners, setCosigners] = useState([]); // array of cosigners user provided. if format [cosigner, fp, path]
-  const [isOnCreateButtonEnabled, setIsOnCreateButtonEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMnemonicsModalVisible, setIsMnemonicsModalVisible] = useState(false);
   const [isProvideMnemonicsModalVisible, setIsProvideMnemonicsModalVisible] = useState(false);
@@ -71,6 +70,10 @@ const WalletsAddMultisigStep2 = () => {
   const [importText, setImportText] = useState('');
   const tooltip = useRef();
   const data = useRef(new Array(n));
+
+  const handleOnHelpPress = () => {
+    navigation.navigate('WalletsAddMultisigHelp');
+  };
 
   const stylesHook = StyleSheet.create({
     root: {
@@ -130,6 +133,12 @@ const WalletsAddMultisigStep2 = () => {
     headerText: {
       color: colors.foregroundColor,
     },
+    helpButton: {
+      backgroundColor: colors.buttonDisabledBackgroundColor,
+    },
+    helpButtonText: {
+      color: colors.foregroundColor,
+    },
   });
 
   const onCreate = () => {
@@ -177,16 +186,18 @@ const WalletsAddMultisigStep2 = () => {
     w.generate().then(() => {
       const cosignersCopy = [...cosigners];
       cosignersCopy.push([w.getSecret(), false, false]);
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      if (Platform.OS !== 'android') LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setCosigners(cosignersCopy);
       setVaultKeyData({ keyIndex: cosignersCopy.length, seed: w.getSecret(), xpub: w.getXpub(), isLoading: false });
+      setIsLoading(true);
       setIsMnemonicsModalVisible(true);
-      if (cosignersCopy.length === n) setIsOnCreateButtonEnabled(true);
+
       // filling cache
       setTimeout(() => {
         // filling cache
         setXpubCacheForMnemonics(w.getSecret());
         setFpCacheForMnemonics(w.getSecret());
+        setIsLoading(false);
       }, 500);
     });
   };
@@ -270,9 +281,8 @@ const WalletsAddMultisigStep2 = () => {
 
     const cosignersCopy = [...cosigners];
     cosignersCopy.push([xpub, fp, path]);
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (Platform.OS !== 'android') LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setCosigners(cosignersCopy);
-    if (cosignersCopy.length === n) setIsOnCreateButtonEnabled(true);
   };
 
   const useMnemonicPhrase = () => {
@@ -290,9 +300,9 @@ const WalletsAddMultisigStep2 = () => {
 
     const cosignersCopy = [...cosigners];
     cosignersCopy.push([hd.getSecret(), false, false]);
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (Platform.OS !== 'android') LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setCosigners(cosignersCopy);
-    if (cosignersCopy.length === n) setIsOnCreateButtonEnabled(true);
+
     setIsProvideMnemonicsModalVisible(false);
     setIsLoading(false);
     setImportText('');
@@ -377,16 +387,15 @@ const WalletsAddMultisigStep2 = () => {
 
       const cosignersCopy = [...cosigners];
       cosignersCopy.push([cosigner.getXpub(), cosigner.getFp(), cosigner.getPath()]);
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      if (Platform.OS !== 'android') LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setCosigners(cosignersCopy);
-      if (cosignersCopy.length === n) setIsOnCreateButtonEnabled(true);
     }
   };
 
   const scanOrOpenFile = () => {
     setIsProvideMnemonicsModalVisible(false);
     if (isDesktop) {
-      ImagePicker.launchCamera(
+      launchCamera(
         {
           title: null,
           mediaType: 'photo',
@@ -394,7 +403,7 @@ const WalletsAddMultisigStep2 = () => {
         },
         response => {
           if (response.uri) {
-            const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.path.toString();
+            const uri = Platform.OS === 'ios' ? response.uri.toString().replace('file://', '') : response.uri;
             LocalQRCode.decode(uri, (error, result) => {
               if (!error) {
                 onBarScanned(result);
@@ -561,7 +570,11 @@ const WalletsAddMultisigStep2 = () => {
           <BlueSpacing10 />
           <View style={styles.secretContainer}>{renderSecret(vaultKeyData.seed.split(' '))}</View>
           <BlueSpacing20 />
-          <BlueButton title={loc.send.success_done} onPress={() => setIsMnemonicsModalVisible(false)} />
+          {isLoading ? (
+            <ActivityIndicator />
+          ) : (
+            <BlueButton title={loc.send.success_done} onPress={() => setIsMnemonicsModalVisible(false)} />
+          )}
         </View>
       </BottomModal>
     );
@@ -634,19 +647,34 @@ const WalletsAddMultisigStep2 = () => {
       </BottomModal>
     );
   };
+
+  const renderHelp = () => {
+    return (
+      <View style={styles.helpButtonWrapper}>
+        <TouchableOpacity style={[styles.helpButton, stylesHook.helpButton]} onPress={handleOnHelpPress}>
+          <Icon size={20} name="help" type="octaicon" color={colors.foregroundColor} />
+          <Text style={[styles.helpButtonText, stylesHook.helpButtonText]}>{loc.multisig.ms_help}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const footer = isLoading ? (
     <BlueLoading />
   ) : (
     <View style={styles.buttonBottom}>
-      <BlueButton title={loc.multisig.create} onPress={onCreate} disabled={!isOnCreateButtonEnabled} />
+      <BlueButton title={loc.multisig.create} onPress={onCreate} disabled={cosigners.length !== n} />
     </View>
   );
 
   return (
     <View style={[styles.root, stylesHook.root]}>
       <StatusBar barStyle="light-content" />
-      <FlatList data={data.current} renderItem={_renderKeyItem} keyExtractor={(_item, index) => `${index}`} />
 
+      {renderHelp()}
+      <View style={[styles.wrapBox]}>
+        <FlatList data={data.current} renderItem={_renderKeyItem} keyExtractor={(_item, index) => `${index}`} />
+      </View>
       {renderMnemonicsModal()}
 
       {renderProvideMnemonicsModal()}
@@ -665,6 +693,10 @@ const styles = StyleSheet.create({
   mainBlock: {
     height: '100%',
     marginHorizontal: 20,
+    marginVertical: 24,
+  },
+  wrapBox: {
+    flex: 1,
     marginVertical: 24,
   },
   buttonBottom: {
@@ -767,10 +799,27 @@ const styles = StyleSheet.create({
   alignItemsCenter: { alignItems: 'center' },
   squareButtonWrapper: { height: 50, width: 250 },
   qrCodeContainer: { borderWidth: 6, borderRadius: 8, borderColor: '#FFFFFF' },
+
+  helpButtonWrapper: {
+    alignItems: 'flex-end',
+  },
+  helpButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 50,
+    flexDirection: 'row',
+  },
+  helpButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
 });
 
 WalletsAddMultisigStep2.navigationOptions = navigationStyle({
   headerTitle: null,
+  gestureEnabled: false,
+  swipeEnabled: false,
 });
 
 export default WalletsAddMultisigStep2;

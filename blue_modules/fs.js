@@ -33,8 +33,13 @@ const writeFileAndExport = async function (filename, contents) {
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
       console.log('Storage Permission: Granted');
       const filePath = RNFS.DownloadDirectoryPath + `/${filename}`;
-      await RNFS.writeFile(filePath, contents);
-      alert(loc.formatString(loc._.file_saved, { filePath: filename }));
+      try {
+        await RNFS.writeFile(filePath, contents);
+        alert(loc.formatString(loc._.file_saved, { filePath: filename }));
+      } catch (e) {
+        console.log(e);
+        alert(e.message);
+      }
     } else {
       console.log('Storage Permission: Denied');
       Alert.alert(loc.send.permission_storage_title, loc.send.permission_storage_denied_message, [
@@ -114,7 +119,7 @@ const showFilePickerAndReadFile = async function () {
     } else {
       if (res.type === DocumentPicker.types.images || res.type.startsWith('image/')) {
         return new Promise(resolve => {
-          const uri = Platform.OS === 'ios' ? res.uri.toString().replace('file://', '') : res.path.toString();
+          const uri = Platform.OS === 'ios' ? res.uri.toString().replace('file://', '') : res.uri;
           LocalQRCode.decode(decodeURI(uri), (error, result) => {
             if (!error) {
               resolve({ data: result, uri: decodeURI(res.uri) });

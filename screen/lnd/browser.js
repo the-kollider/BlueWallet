@@ -292,14 +292,12 @@ const styles = StyleSheet.create({
 export default class Browser extends Component {
   constructor(props) {
     super(props);
-    if (!props.route.params.fromSecret) throw new Error('Invalid param');
     if (!props.route.params.fromWallet) throw new Error('Invalid param');
     let url;
     if (props.route.params.url) url = props.route.params.url;
 
     this.state = {
       url: url || 'https://bluewallet.io/marketplace/',
-      fromSecret: props.route.params.fromSecret,
       fromWallet: props.route.params.fromWallet,
       canGoBack: false,
       pageIsLoading: false,
@@ -362,7 +360,7 @@ export default class Browser extends Component {
                       screen: 'ScanLndInvoice',
                       params: {
                         uri: json.sendPayment,
-                        fromSecret: this.state.fromSecret,
+                        walletID: this.state.fromWallet.getID(),
                       },
                     });
                   },

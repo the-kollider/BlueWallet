@@ -25,6 +25,7 @@ import WalletTransactions from './screen/wallets/transactions';
 import AddWallet from './screen/wallets/add';
 import WalletsAddMultisig from './screen/wallets/addMultisig';
 import WalletsAddMultisigStep2 from './screen/wallets/addMultisigStep2';
+import WalletsAddMultisigHelp from './screen/wallets/addMultisigHelp';
 import PleaseBackup from './screen/wallets/pleaseBackup';
 import PleaseBackupLNDHub from './screen/wallets/pleaseBackupLNDHub';
 import ImportWallet from './screen/wallets/import';
@@ -201,6 +202,11 @@ const AddWalletRoot = () => {
         name="WalletsAddMultisigStep2"
         component={WalletsAddMultisigStep2}
         options={WalletsAddMultisigStep2.navigationOptions(theme)}
+      />
+      <AddWalletStack.Screen
+        name="WalletsAddMultisigHelp"
+        component={WalletsAddMultisigHelp}
+        options={WalletsAddMultisigHelp.navigationOptions(theme)}
       />
     </AddWalletStack.Navigator>
   );
@@ -414,6 +420,44 @@ const InitRoot = () => (
   </InitStack.Navigator>
 );
 
+const ViewEditMultisigCosignersStack = createStackNavigator();
+const ViewEditMultisigCosignersRoot = () => {
+  const theme = useTheme();
+
+  return (
+    <ViewEditMultisigCosignersStack.Navigator
+      name="ViewEditMultisigCosignersRoot"
+      screenOptions={defaultStackScreenOptions}
+      initialRouteName="ViewEditMultisigCosigners"
+    >
+      <ViewEditMultisigCosignersStack.Screen
+        name="ViewEditMultisigCosigners"
+        component={ViewEditMultisigCosigners}
+        options={ViewEditMultisigCosigners.navigationOptions(theme)}
+      />
+    </ViewEditMultisigCosignersStack.Navigator>
+  );
+};
+
+const ExportMultisigCoordinationSetupStack = createStackNavigator();
+const ExportMultisigCoordinationSetupRoot = () => {
+  const theme = useTheme();
+
+  return (
+    <ExportMultisigCoordinationSetupStack.Navigator
+      name="ExportMultisigCoordinationSetupRoot"
+      screenOptions={defaultStackScreenOptions}
+      initialRouteName="ExportMultisigCoordinationSetup"
+    >
+      <ExportMultisigCoordinationSetupStack.Screen
+        name="ExportMultisigCoordinationSetup"
+        component={ExportMultisigCoordinationSetup}
+        options={ExportMultisigCoordinationSetup.navigationOptions(theme)}
+      />
+    </ExportMultisigCoordinationSetupStack.Navigator>
+  );
+};
+
 const RootStack = createStackNavigator();
 const Navigation = () => {
   const theme = useTheme();
@@ -434,15 +478,11 @@ const Navigation = () => {
       {/* screens */}
       <RootStack.Screen name="WalletExportRoot" component={WalletExportStackRoot} options={{ headerShown: false }} />
       <RootStack.Screen
-        name="ExportMultisigCoordinationSetup"
-        component={ExportMultisigCoordinationSetup}
-        options={ExportMultisigCoordinationSetup.navigationOptions(theme)}
+        name="ExportMultisigCoordinationSetupRoot"
+        component={ExportMultisigCoordinationSetupRoot}
+        options={{ headerShown: false }}
       />
-      <RootStack.Screen
-        name="ViewEditMultisigCosigners"
-        component={ViewEditMultisigCosigners}
-        options={ViewEditMultisigCosigners.navigationOptions(theme)}
-      />
+      <RootStack.Screen name="ViewEditMultisigCosignersRoot" component={ViewEditMultisigCosignersRoot} options={{ headerShown: false }} />
       <RootStack.Screen name="WalletXpubRoot" component={WalletXpubStackRoot} options={{ headerShown: false }} />
       <RootStack.Screen name="BuyBitcoin" component={BuyBitcoin} options={BuyBitcoin.navigationOptions(theme)} />
       <RootStack.Screen name="Marketplace" component={Marketplace} options={Marketplace.navigationOptions(theme)} />

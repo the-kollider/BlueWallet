@@ -194,13 +194,19 @@ const WalletDetails = () => {
     });
   };
   const navigateToMultisigCoordinationSetup = () => {
-    navigate('ExportMultisigCoordinationSetup', {
-      walletId: wallet.getID(),
+    navigate('ExportMultisigCoordinationSetupRoot', {
+      screen: 'ExportMultisigCoordinationSetup',
+      params: {
+        walletId: wallet.getID(),
+      },
     });
   };
   const navigateToViewEditCosigners = () => {
-    navigate('ViewEditMultisigCosigners', {
-      walletId: wallet.getID(),
+    navigate('ViewEditMultisigCosignersRoot', {
+      screen: 'ViewEditMultisigCosigners',
+      params: {
+        walletId: wallet.getID(),
+      },
     });
   };
   const navigateToXPub = () =>
@@ -285,8 +291,13 @@ const WalletDetails = () => {
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         console.log('Storage Permission: Granted');
         const filePath = RNFS.DownloadDirectoryPath + `/${fileName}`;
-        await RNFS.writeFile(filePath, contents);
-        alert(loc.formatString(loc.send.txSaved, { filePath: fileName }));
+        try {
+          await RNFS.writeFile(filePath, contents);
+          alert(loc.formatString(loc.send.txSaved, { filePath: fileName }));
+        } catch (e) {
+          console.log(e);
+          alert(e.message);
+        }
       } else {
         console.log('Storage Permission: Denied');
         Alert.alert(loc.send.permission_storage_title, loc.send.permission_storage_denied_message, [
