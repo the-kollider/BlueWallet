@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Image, View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { SafeBlueArea, BlueNavigationStyle, BlueLoading } from '../../BlueComponents';
+import { SafeBlueArea, BlueLoading } from '../../BlueComponents';
 import navigationStyle from '../../components/navigationStyle';
 /** @type {AppStorage} */
 import loc from '../../loc';
